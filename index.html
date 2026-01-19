@@ -224,7 +224,24 @@
         <h1>📺 TV Online</h1>
     </div>
 
- 
+    <div class="container">
+        <div class="video-section">
+            <video id="videoPlayer" controls autoplay></video>
+            <div class="channel-info" id="channelInfo">
+                <h3>Chưa chọn kênh</h3>
+                <p>Vui lòng chọn một kênh từ danh sách bên cạnh</p>
+            </div>
+        </div>
+
+        <div class="channels-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm kênh...">
+            </div>
+            <div class="channels-list" id="channelsList">
+                <div class="loading">Đang tải danh sách kênh...</div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Thư viện HLS.js để hỗ trợ phát stream .m3u8
