@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Online - Kênh Truyền Hình Việt Nam</title>
+    <title>TV Online</title>
     <style>
         * {
             margin: 0;
@@ -33,19 +33,6 @@
         .header h1 {
             color: #fff;
             font-size: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .header .badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #fff;
-            font-weight: normal;
         }
 
         .container {
@@ -84,30 +71,6 @@
         .channel-info h3 {
             color: #fff;
             margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .channel-info .status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #4ade80;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
-            }
         }
 
         .channel-info p {
@@ -258,10 +221,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>
-            📺 TV Online
-            <span class="badge">🇻🇳 Kênh Việt Nam</span>
-        </h1>
+        <h1>📺 TV Online</h1>
     </div>
 
     <div class="container">
@@ -283,74 +243,84 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
-        // Danh sách kênh truyền hình Việt Nam
-        const channelsData = [
-            {
-                name: "VTV1 - Đài Truyền hình Việt Nam",
-                logo: "https://vtv1.mediacdn.vn/web_images/vtv1.png",
-                group: "VTV",
-                url: "https://vtv1.mediacdn.vn/web_images/logo-vtv1.png"
-            },
-            {
-                name: "VTV2 - Khoa học & Giáo dục",
-                logo: "https://vtv2.mediacdn.vn/web_images/vtv2.png",
-                group: "VTV",
-                url: "https://vtv2.mediacdn.vn/web_images/logo-vtv2.png"
-            },
-            {
-                name: "VTV3 - Giải trí tổng hợp",
-                logo: "https://vtv3.mediacdn.vn/web_images/vtv3.png",
-                group: "VTV",
-                url: "https://vtv3.mediacdn.vn/web_images/logo-vtv3.png"
-            },
-            {
-                name: "HTV7 - Đài Truyền hình TP.HCM",
-                logo: "https://htv.com.vn/images/htv7-logo.png",
-                group: "HTV",
-                url: "https://htv.com.vn/images/htv7-logo.png"
-            },
-            {
-                name: "HTV9 - Đài Truyền hình TP.HCM",
-                logo: "https://htv.com.vn/images/htv9-logo.png",
-                group: "HTV",
-                url: "https://htv.com.vn/images/htv9-logo.png"
-            },
-            {
-                name: "VTC1 - Đài Truyền hình Kỹ thuật số",
-                logo: "https://vtc.gov.vn/images/vtc1-logo.png",
-                group: "VTC",
-                url: "https://vtc.gov.vn/images/vtc1-logo.png"
-            },
-            {
-                name: "ANTV - Truyền hình Công an Nhân dân",
-                logo: "https://antv.gov.vn/images/antv-logo.png",
-                group: "ANTV",
-                url: "https://antv.gov.vn/images/antv-logo.png"
-            },
-            {
-                name: "VOV TV - Đài Tiếng nói Việt Nam",
-                logo: "https://vov.vn/images/vovtv-logo.png",
-                group: "VOV",
-                url: "https://vov.vn/images/vovtv-logo.png"
-            },
-            {
-                name: "THVL1 - Đài PT-TH Vĩnh Long",
-                logo: "https://thvl.vn/images/thvl1-logo.png",
-                group: "THVL",
-                url: "https://thvl.vn/images/thvl1-logo.png"
-            },
-            {
-                name: "SCTV4 - Đài Truyền hình Cáp",
-                logo: "https://sctv.com.vn/images/sctv4-logo.png",
-                group: "SCTV",
-                url: "https://sctv.com.vn/images/sctv4-logo.png"
-            }
-        ];
+        // Thư viện HLS.js để hỗ trợ phát stream .m3u8
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+        document.head.appendChild(script);
 
-        let channels = channelsData;
-        let filteredChannels = [...channels];
+        // Danh sách kênh
+        let channels = [];
+        let filteredChannels = [];
+
+        // URL M3U - bạn có thể thay đổi URL khác
+        const M3U_URL = 'https://iptv-org.github.io/iptv/categories/sports.m3u';
+
+        // Fetch và parse file M3U
+        async function loadChannels() {
+            const channelsList = document.getElementById('channelsList');
+            try {
+                // Sử dụng proxy CORS để vượt qua hạn chế truy cập
+                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                const response = await fetch(M3U_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const m3uContent = await response.text();
+                parseM3U(m3uContent);
+                displayChannels();
+            } catch (error) {
+                channelsList.innerHTML = `
+                    <div class="error">
+                        <p>❌ Lỗi khi tải danh sách kênh!</p>
+                        <p>${error.message}</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Vui lòng kiểm tra URL hoặc sử dụng proxy CORS</p>
+                    </div>
+                `;
+                console.error('Error loading channels:', error);
+            }
+        }
+
+        // Parse nội dung M3U
+        function parseM3U(content) {
+            channels = [];
+            const lines = content.split('\n');
+            let currentChannel = null;
+
+            lines.forEach(line => {
+                line = line.trim();
+                
+                // Parse EXTINF line
+                if (line.startsWith('#EXTINF:')) {
+                    const info = line.substring(8); // Remove "#EXTINF:"
+                    const parts = info.split(',');
+                    const name = parts[1] || 'Unknown Channel';
+                    
+                    // Parse attributes
+                    const attrString = parts[0];
+                    const logoMatch = attrString.match(/tvg-logo="([^"]+)"/);
+                    const groupMatch = attrString.match(/group-title="([^"]+)"/);
+                    
+                    currentChannel = {
+                        name: name.trim(),
+                        logo: logoMatch ? logoMatch[1] : 'https://via.placeholder.com/60x60?text=TV',
+                        group: groupMatch ? groupMatch[1] : 'Khác',
+                        url: ''
+                    };
+                }
+                
+                // Parse URL line (bắt đầu bằng http)
+                if (line.startsWith('http') && currentChannel) {
+                    currentChannel.url = line.trim();
+                    channels.push(currentChannel);
+                    currentChannel = null;
+                }
+            });
+
+            filteredChannels = [...channels];
+        }
 
         // Hiển thị danh sách kênh
         function displayChannels() {
@@ -364,7 +334,7 @@
             channelsList.innerHTML = filteredChannels.map((channel, index) => `
                 <div class="channel-item" onclick="playChannel(${index})">
                     <img class="channel-logo" src="${channel.logo}" alt="${channel.name}" 
-                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22%23999%22%3E📺%3C/text%3E%3C/svg%3E'">
+                         onerror="this.src='https://via.placeholder.com/60x60?text=TV'">
                     <div class="channel-details">
                         <div class="channel-name">${channel.name}</div>
                         <div class="channel-group">${channel.group}</div>
@@ -381,10 +351,7 @@
             
             // Cập nhật thông tin kênh
             channelInfo.innerHTML = `
-                <h3>
-                    <span class="status"></span>
-                    ${channel.name}
-                </h3>
+                <h3>${channel.name}</h3>
                 <p>Nhóm: ${channel.group}</p>
             `;
             
@@ -396,40 +363,26 @@
             // Thêm active class cho kênh đang phát
             document.querySelectorAll('.channel-item')[index].classList.add('active');
             
-            // Demo video - sử dụng stream mẫu
-            const demoStreams = {
-                "VTV1 - Đài Truyền hình Việt Nam": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-                "VTV2 - Khoa học & Giáo dục": "https://test-streams.mux.dev/tos_ismc/main.m3u8",
-                "VTV3 - Giải trí tổng hợp": "https://test-streams.mux.dev/bbb_30fps/bbb_30fps.m3u8",
-                "HTV7 - Đài Truyền hình TP.HCM": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-                "HTV9 - Đài Truyền hình TP.HCM": "https://test-streams.mux.dev/tos_ismc/main.m3u8",
-                "VTC1 - Đài Truyền hình Kỹ thuật số": "https://test-streams.mux.dev/bbb_30fps/bbb_30fps.m3u8",
-                "ANTV - Truyền hình Công an Nhân dân": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-                "VOV TV - Đài Tiếng nói Việt Nam": "https://test-streams.mux.dev/tos_ismc/main.m3u8",
-                "THVL1 - Đài PT-TH Vĩnh Long": "https://test-streams.mux.dev/bbb_30fps/bbb_30fps.m3u8",
-                "SCTV4 - Đài Truyền hình Cáp": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-            };
-            
-            const streamUrl = demoStreams[channel.name] || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
-            
             // Phát video
             if (Hls.isSupported()) {
-                if (window.hls) {
-                    window.hls.destroy();
-                }
-                window.hls = new Hls();
-                window.hls.loadSource(streamUrl);
-                window.hls.attachMedia(videoPlayer);
-                window.hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                const hls = new Hls();
+                hls.loadSource(channel.url);
+                hls.attachMedia(videoPlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     videoPlayer.play();
                 });
             } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-                videoPlayer.src = streamUrl;
+                // Hỗ trợ trên Safari
+                videoPlayer.src = channel.url;
                 videoPlayer.addEventListener('loadedmetadata', function() {
                     videoPlayer.play();
                 });
             } else {
-                console.log('HLS không được hỗ trợ trong trình duyệt này');
+                // Thử phát trực tiếp
+                videoPlayer.src = channel.url;
+                videoPlayer.play().catch(e => {
+                    alert('Không thể phát kênh này. Có thể định dạng không được hỗ trợ.');
+                });
             }
         }
 
@@ -437,16 +390,414 @@
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             filteredChannels = channels.filter(channel => 
-                channel.name.toLowerCase().includes(searchTerm) ||
-                channel.group.toLowerCase().includes(searchTerm)
+                channel.name.toLowerCase().includes(searchTerm)
             );
             displayChannels();
         });
 
-        // Khởi tạo
-        window.addEventListener('DOMContentLoaded', function() {
+        // Tải danh sách kênh khi trang được load
+        window.addEventListener('DOMContentLoaded', loadChannels);
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 28px;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .video-section {
+            flex: 2;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #videoPlayer {
+            width: 100%;
+            height: 500px;
+            background: #000;
+        }
+
+        .channel-info {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .channel-info h3 {
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .channel-info p {
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .channels-section {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-box {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+        }
+
+        .search-box input::placeholder {
+            color: #aaa;
+        }
+
+        .channels-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .channel-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .channel-item.active {
+            background: rgba(0, 123, 255, 0.25);
+            border-left: 4px solid #00a8ff;
+        }
+
+        .channel-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            background: #fff;
+            padding: 3px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .channel-details {
+            flex: 1;
+        }
+
+        .channel-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .channel-group {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+            padding: 20px;
+            text-align: center;
+            margin: 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        /* Scrollbar styling */
+        .channels-list::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .channels-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .channels-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .channels-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            #videoPlayer {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📺 TV Online</h1>
+    </div>
+
+    <div class="container">
+        <div class="video-section">
+            <video id="videoPlayer" controls autoplay></video>
+            <div class="channel-info" id="channelInfo">
+                <h3>Chưa chọn kênh</h3>
+                <p>Vui lòng chọn một kênh từ danh sách bên cạnh</p>
+            </div>
+        </div>
+
+        <div class="channels-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm kênh...">
+            </div>
+            <div class="channels-list" id="channelsList">
+                <div class="loading">Đang tải danh sách kênh...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Thư viện HLS.js để hỗ trợ phát stream .m3u8
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+        document.head.appendChild(script);
+
+        // Danh sách kênh
+        let channels = [];
+        let filteredChannels = [];
+
+        // URL M3U - bạn có thể thay đổi URL khác
+        const M3U_URL = 'https://iptv-org.github.io/iptv/categories/sports.m3u';
+
+        // Fetch và parse file M3U
+        async function loadChannels() {
+            const channelsList = document.getElementById('channelsList');
+            try {
+                // Sử dụng proxy CORS để vượt qua hạn chế truy cập
+                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                const response = await fetch(M3U_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const m3uContent = await response.text();
+                parseM3U(m3uContent);
+                displayChannels();
+            } catch (error) {
+                channelsList.innerHTML = `
+                    <div class="error">
+                        <p>❌ Lỗi khi tải danh sách kênh!</p>
+                        <p>${error.message}</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Vui lòng kiểm tra URL hoặc sử dụng proxy CORS</p>
+                    </div>
+                `;
+                console.error('Error loading channels:', error);
+            }
+        }
+
+        // Parse nội dung M3U
+        function parseM3U(content) {
+            channels = [];
+            const lines = content.split('\n');
+            let currentChannel = null;
+
+            lines.forEach(line => {
+                line = line.trim();
+                
+                // Parse EXTINF line
+                if (line.startsWith('#EXTINF:')) {
+                    const info = line.substring(8); // Remove "#EXTINF:"
+                    const parts = info.split(',');
+                    const name = parts[1] || 'Unknown Channel';
+                    
+                    // Parse attributes
+                    const attrString = parts[0];
+                    const logoMatch = attrString.match(/tvg-logo="([^"]+)"/);
+                    const groupMatch = attrString.match(/group-title="([^"]+)"/);
+                    
+                    currentChannel = {
+                        name: name.trim(),
+                        logo: logoMatch ? logoMatch[1] : 'https://via.placeholder.com/60x60?text=TV',
+                        group: groupMatch ? groupMatch[1] : 'Khác',
+                        url: ''
+                    };
+                }
+                
+                // Parse URL line (bắt đầu bằng http)
+                if (line.startsWith('http') && currentChannel) {
+                    currentChannel.url = line.trim();
+                    channels.push(currentChannel);
+                    currentChannel = null;
+                }
+            });
+
+            filteredChannels = [...channels];
+        }
+
+        // Hiển thị danh sách kênh
+        function displayChannels() {
+            const channelsList = document.getElementById('channelsList');
+            
+            if (filteredChannels.length === 0) {
+                channelsList.innerHTML = '<div class="loading">Không tìm thấy kênh nào</div>';
+                return;
+            }
+
+            channelsList.innerHTML = filteredChannels.map((channel, index) => `
+                <div class="channel-item" onclick="playChannel(${index})">
+                    <img class="channel-logo" src="${channel.logo}" alt="${channel.name}" 
+                         onerror="this.src='https://via.placeholder.com/60x60?text=TV'">
+                    <div class="channel-details">
+                        <div class="channel-name">${channel.name}</div>
+                        <div class="channel-group">${channel.group}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Phát kênh được chọn
+        function playChannel(index) {
+            const channel = filteredChannels[index];
+            const videoPlayer = document.getElementById('videoPlayer');
+            const channelInfo = document.getElementById('channelInfo');
+            
+            // Cập nhật thông tin kênh
+            channelInfo.innerHTML = `
+                <h3>${channel.name}</h3>
+                <p>Nhóm: ${channel.group}</p>
+            `;
+            
+            // Loại bỏ active class khỏi tất cả các kênh
+            document.querySelectorAll('.channel-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Thêm active class cho kênh đang phát
+            document.querySelectorAll('.channel-item')[index].classList.add('active');
+            
+            // Phát video
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(channel.url);
+                hls.attachMedia(videoPlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    videoPlayer.play();
+                });
+            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                // Hỗ trợ trên Safari
+                videoPlayer.src = channel.url;
+                videoPlayer.addEventListener('loadedmetadata', function() {
+                    videoPlayer.play();
+                });
+            } else {
+                // Thử phát trực tiếp
+                videoPlayer.src = channel.url;
+                videoPlayer.play().catch(e => {
+                    alert('Không thể phát kênh này. Có thể định dạng không được hỗ trợ.');
+                });
+            }
+        }
+
+        // Tìm kiếm kênh
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            filteredChannels = channels.filter(channel => 
+                channel.name.toLowerCase().includes(searchTerm)
+            );
             displayChannels();
         });
+
+        // Tải danh sách kênh khi trang được load
+        window.addEventListener('DOMContentLoaded', loadChannels);
     </script>
 </body>
 </html>
